@@ -1,40 +1,29 @@
-# As a professional web game developer, create me a tic tac toe game for one person against computer on a 5*5 matrix in Python
+# create me a tic tac toe web based game for one person against computer on a 5*5 matrix in Python
 
-from tkinter import *
+from flask import Flask, render_template, request, redirect, url_for
 import random
 
-def click(r, c):
-    global player
-    if player == 'X' and states[r][c] == 0 and stop_game == False:
-        b[r][c].config(text='X', fg='blue', bg='white')
-        states[r][c] = 'X'
-        player = 'O'
-    if player == 'O' and states[r][c] == 0 and stop_game == False:
-        b[r][c].config(text='O', fg='orange', bg='black')
-        states[r][c] = 'O'
-        player = 'X'
-    check_for_winner()
+app = Flask(__name__)
+game_state = [['' for _ in range(5)] for _ in range(5)]
 
-def main():
-    global b, states, player, stop_game
+@app.route('/')
+def home():
+    return render_template('index.html', game_state=game_state)
 
-    # Initialize the game
-    player = 'X'
-    stop_game = False
-    states = [[0, 0, 0, 0, 0] for _ in range(5)]
+@app.route('/move', methods=['POST'])
+def player_move():
+    data = request.get_json()
+    x, y = data['x'], data['y']
+    game_state[x][y] = 'X'  # Player's move
+    computer_move()
+    return redirect(url_for('home'))
 
-    # Create the game board
-    root = Tk()
-    root.title("Tic Tac Toe")
-    b = [[0, 0, 0, 0, 0] for _ in range(5)]
-    for i in range(5):
-        for j in range(5):
-            b[i][j] = Button(font=("Arial", 20), width=4, height=2,
-                                command=lambda r=i, c=j: click(r, c))
-            b[i][j].grid(row=i, column=j)
+def computer_move():
+    while True:
+        x, y = random.randint(0, 4), random.randint(0, 4)
+        if game_state[x][y] == '':
+            game_state[x][y] = 'O'  # Computer's move
+            break
 
-    # Start the game
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True)
